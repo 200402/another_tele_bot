@@ -94,7 +94,12 @@ def stop(id_user, id_camera):
     db = sqlite3.connect("mydatabase.db")
     sql = db.cursor()
     sql.execute(f"SELECT * FROM cameras WHERE id = '{id_camera}'")
-    if sql.fetchone() is None:
+    if id_camera.lower() == "all":
+        sql.execute(f"DELETE FROM users_cameras WHERE users_id = '{id_user}'")
+        db.commit()
+        db.close()
+        return "Вы отменили все свои подписки"
+    elif sql.fetchone() is None:
         db.close()
         return "Нет камеры с таким номером"
     else:
@@ -110,17 +115,29 @@ def stop(id_user, id_camera):
 
 
 # команда cameras
-def cameras(id_user, id_camera):
+def cameras(id_user):
     db = sqlite3.connect("mydatabase.db")
     sql = db.cursor()
-    sql.execute(f"SELECT id FROM users WHERE id = '{id}'")
+    sql.execute(f"SELECT * FROM users_cameras WHERE users_id = '{id_user}'")
     if sql.fetchone() is None:
-        pass
-
-
-    sql.execute(f"INSERT INTO users VALUES (?,?)", (id_user, id_camera,))
-    db.commit()
+        db.close()
+        return "Вы не подписаны ни на одну камеру"
+    else:
+        ret_value = f"Вы Подписаны на камеры:"
+        for value in sql.execute(f"SELECT * FROM cameras INNER JOIN users_cameras ON cameras.id = users_cameras.cameras_id;"):
+            ret_value += f"\nНомер: " + value[0]+ "; " + value[1]
+        db.close()
+        return ret_value
+    
+# команда get_info
+def get_info():
+    db = sqlite3.connect("mydatabase.db")
+    sql = db.cursor()
+    ret_value = ""
+    for value in sql.execute(f"SELECT * FROM cameras"):
+        ret_value += f"\nНомер: " + value[0]+ "; " + value[1]
     db.close()
+    return ret_value
 
 
 # изменение текущего действия пользователя

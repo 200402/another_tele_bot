@@ -11,7 +11,7 @@ database_commands.add_cameras()
 
 @bot.message_handler(commands = ['start'])
 def statring(message):
-    bot.send_message(message.chat.id, standart_text)
+    bot.send_message(message.chat.id, standart_text(message.chat.id))
     
 
 # подписаться
@@ -33,15 +33,16 @@ def sub(message):
 @bot.message_handler(commands = ['cameras'])
 def sub(message):
     if database_commands.does_the_user_have_access(message.chat.id):
-        database_commands.change_status_user(message.chat.id, "cameras")
-        pass ############################################################################
+        database_commands.change_status_user(message.chat.id, "calmness")
+        bot.send_message(message.chat.id, database_commands.cameras(message.chat.id) + f"\n\n" + standart_text(message.chat.id))
  
 
-# т.к. я хз как и какая приходит информация с камер, я решил поставить эту заглушку
+# информация о всех камерах
 @bot.message_handler(commands = ['get_info'])
 def sub(message):
     if database_commands.does_the_user_have_access(message.chat.id):
-        pass
+        database_commands.change_status_user(message.chat.id, "calmness")
+        bot.send_message(message.chat.id, database_commands.get_info() + f"\n\n" + standart_text(message.chat.id))
 
 # конец обработки реакции на комманды
 #________________________________________________________________________________________
@@ -51,15 +52,12 @@ def any_not_command_message(message):
     if database_commands.does_the_user_have_access(message.chat.id):
         status = database_commands.get_status_user(message.chat.id)
         if status[0] == "sub":
-            bot.send_message(message.chat.id, database_commands.sub(message.chat.id, message.chat.text))
+            bot.send_message(message.chat.id, database_commands.sub(message.chat.id, message.text))
         elif status[0] == "stop":
-            pass
-        elif status[0] == "cameras":
-            pass
+            bot.send_message(message.chat.id, database_commands.stop(message.chat.id, message.text)) 
         database_commands.change_status_user(message.chat.id, "calmness") 
-        # пока, что так, но если нужно работать с множеством камер, то надо переделать
-        # поправлю или сделаю красивее пофсле получения правок
-    bot.send_message(message.chat.id, standart_text)
+        # мне это не нравися, это не удобно, если камер много, да и по 2 сообщения за раз присылает, но как защита от косяков пока что сойдет
+    bot.send_message(message.chat.id, standart_text(message.chat.id))
 
 
 # что отправлять на старте или если сообщение - не комманда
@@ -76,7 +74,7 @@ def text_instructions():
 /sub - выбор камеры для подписки.
 /stop - отменить подписку на камеру.
 /cameras - список камер, на которые вы подписаны.
-/get_info - получить всю скопившуюся информацию с камер."""
+/get_info - получить информацию о всех камерах."""
 
 def text_report_lack_of_right():
     return "Извините, Вам не разрешен доступ к функционалу этого бота"
