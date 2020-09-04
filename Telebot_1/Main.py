@@ -14,7 +14,7 @@ def statring(message):
     bot.send_message(message.chat.id, standart_text(message.chat.id))
     
 
-# подписаться
+# подписаться 
 @bot.message_handler(commands = ['sub'])
 def sub(message):
     if database_commands.does_the_user_have_access(message.chat.id):
@@ -56,7 +56,7 @@ def any_not_command_message(message):
         elif status[0] == "stop":
             bot.send_message(message.chat.id, database_commands.stop(message.chat.id, message.text)) 
         database_commands.change_status_user(message.chat.id, "calmness") 
-        # мне это не нравися, это не удобно, если камер много, да и по 2 сообщения за раз присылает, но как защита от косяков пока что сойдет
+        # мне это не нравися; это не удобно, если камер много, да и по 2 сообщения за раз присылает, но как защита от косяков пока что сойдет
     bot.send_message(message.chat.id, standart_text(message.chat.id))
 
 
