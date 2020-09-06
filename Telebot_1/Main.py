@@ -1,8 +1,9 @@
 import database_commands
+from config import token
 
 from aiogram import Bot, Dispatcher, executor, types
 
-bot = Bot('')
+bot = Bot(token)
 dp = Dispatcher(bot)
 database_commands.create_table()
 database_commands.add_users()
