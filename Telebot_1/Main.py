@@ -1,7 +1,9 @@
-import telebot 
 import database_commands
 
-bot = telebot.TeleBot('1246495184:AAHTb5Syjr3PctV6ROOg_yMiMyvodDbmvXI')
+from aiogram import Bot, Dispatcher, executor, types
+
+bot = Bot('')
+dp = Dispatcher(bot)
 database_commands.create_table()
 database_commands.add_users()
 database_commands.add_cameras()
@@ -9,55 +11,55 @@ database_commands.add_cameras()
 #________________________________________________________________________________________
 # начало обработки реакции на комманды
 
-@bot.message_handler(commands = ['start'])
-def statring(message):
-    bot.send_message(message.chat.id, standart_text(message.chat.id))
+@dp.message_handler(commands = ['start'])
+async def statring(message: types.Message):
+    await message.answer(standart_text(message.from_user.id))
     
 
 # подписаться 
-@bot.message_handler(commands = ['sub'])
-def sub(message):
-    if database_commands.does_the_user_have_access(message.chat.id):
-        database_commands.change_status_user(message.chat.id, "sub")
-        bot.send_message(message.chat.id, "Введите номер камеры на которую хотите подписаться")
+@dp.message_handler(commands = ['sub'])
+async def sub(message: types.Message):
+    if database_commands.does_the_user_have_access(message.from_user.id):
+        database_commands.change_status_user(message.from_user.id, "sub")
+        await message.answer("Введите номер камеры на которую хотите подписаться")
     
         
 # отписаться
-@bot.message_handler(commands = ['stop'])
-def sub(message):
-    if database_commands.does_the_user_have_access(message.chat.id):
-        database_commands.change_status_user(message.chat.id, "stop")
-        bot.send_message(message.chat.id, "Введите номер камеры откоторой хотите отписаться или 'all' для отмены всех подписок")
+@dp.message_handler(commands = ['stop'])
+async def stop(message: types.Message):
+    if database_commands.does_the_user_have_access(message.from_user.id):
+        database_commands.change_status_user(message.from_user.id, "stop")
+        await message.answer("Введите номер камеры откоторой хотите отписаться или 'all' для отмены всех подписок")
     
 # инфа о подписках
-@bot.message_handler(commands = ['cameras'])
-def sub(message):
-    if database_commands.does_the_user_have_access(message.chat.id):
-        database_commands.change_status_user(message.chat.id, "calmness")
-        bot.send_message(message.chat.id, database_commands.cameras(message.chat.id) + f"\n\n" + standart_text(message.chat.id))
+@dp.message_handler(commands = ['cameras'])
+async def cameras(message: types.Message):
+    if database_commands.does_the_user_have_access(message.from_user.id):
+        database_commands.change_status_user(message.from_user.id, "calmness")
+        await message.answer(database_commands.cameras(message.from_user.id) + f"\n\n" + standart_text(message.from_user.id))
  
 
 # информация о всех камерах
-@bot.message_handler(commands = ['get_info'])
-def sub(message):
-    if database_commands.does_the_user_have_access(message.chat.id):
-        database_commands.change_status_user(message.chat.id, "calmness")
-        bot.send_message(message.chat.id, database_commands.get_info() + f"\n\n" + standart_text(message.chat.id))
+@dp.message_handler(commands = ['get_info'])
+async def get_info(message: types.Message):
+    if database_commands.does_the_user_have_access(message.from_user.id):
+        database_commands.change_status_user(message.from_user.id, "calmness")
+        await message.answer(database_commands.get_info() + f"\n\n" + standart_text(message.from_user.id))
 
 # конец обработки реакции на комманды
 #________________________________________________________________________________________
 
-@bot.message_handler(content_types=["text"])
-def any_not_command_message(message):
-    if database_commands.does_the_user_have_access(message.chat.id):
-        status = database_commands.get_status_user(message.chat.id)
+@dp.message_handler(content_types=["text"])
+async def any_not_command_message(message: types.Message):
+    if database_commands.does_the_user_have_access(message.from_user.id):
+        status = database_commands.get_status_user(message.from_user.id)
         if status[0] == "sub":
-            bot.send_message(message.chat.id, database_commands.sub(message.chat.id, message.text))
+            await message.answer(database_commands.sub(message.from_user.id, message.text))
         elif status[0] == "stop":
-            bot.send_message(message.chat.id, database_commands.stop(message.chat.id, message.text)) 
-        database_commands.change_status_user(message.chat.id, "calmness") 
+            await message.answer(database_commands.stop(message.from_user.id, message.text)) 
+        database_commands.change_status_user(message.from_user.id, "calmness") 
         # мне это не нравися; это не удобно, если камер много, да и по 2 сообщения за раз присылает, но как защита от косяков пока что сойдет
-    bot.send_message(message.chat.id, standart_text(message.chat.id))
+    await message.answer(standart_text(message.from_user.id))
 
 
 # что отправлять на старте или если сообщение - не комманда
@@ -80,5 +82,5 @@ def text_report_lack_of_right():
     return "Извините, Вам не разрешен доступ к функционалу этого бота"
 
 
-
-bot.polling(none_stop=True)
+if __name__ == '__main__':
+    executor.start_polling(dp, skip_updates=True)
