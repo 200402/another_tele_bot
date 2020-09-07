@@ -8,8 +8,10 @@ def create_table():
 
         sql.execute("""CREATE TABLE IF NOT EXISTS users (
                     id TEXT PRIMARY KEY, 
-                    status TEXT
+                    status TEXT,
+                    number_of_messages_received TEXT
                     )""") 
+        # number на случай, если у телеграма изменятся правила антиспама на количество сообщений
 
         sql.execute("""CREATE TABLE IF NOT EXISTS cameras (
                     id TEXT PRIMARY KEY,
@@ -22,16 +24,19 @@ def create_table():
                     FOREIGN KEY (users_id) REFERENCES users(id)
                     FOREIGN KEY (cameras_id) REFERENCES cameras(id)
                     )""") 
+        
+        sql.execute(f"UPDATE users SET number_of_messages_received = 0")
+        
 
 # добавление юзеров
 def add_users():
     with sqlite3.connect("mydatabase.db") as db:
         sql = db.cursor()
-        users_id = ['454054254', "123212", "12312212"]
+        users_id = ['454054254']
         for user_id in users_id:
             sql.execute(f"SELECT id FROM users WHERE id = '{user_id}'")
             if sql.fetchone() is None:
-                sql.execute(f"INSERT INTO users VALUES (?,?)", (user_id,"calmness",))
+                sql.execute(f"INSERT INTO users VALUES (?,?,?)", (user_id,"calmness",'0'))
 
 
 # добавление камер
@@ -111,6 +116,34 @@ def get_info():
         for value in sql.execute(f"SELECT * FROM cameras"):
             ret_value += f"\nНомер: " + value[0]+ "; " + value[1] 
         return ret_value
+    
+    
+# список подписанных на камеру
+def who_subscribed_to_the_camera(camera_id):
+   with sqlite3.connect("mydatabase.db") as db:
+        sql = db.cursor()
+        return sql.execute(f"SELECT users_id FROM users_cameras WHERE cameras_id = '{camera_id}'")
+
+
+# можно ли отправить еще сообщение пользователю
+def is_it_possible_to_send_another_message_to_the_user(user_id):
+    with sqlite3.connect("mydatabase.db") as db:
+        sql = db.cursor()
+        sql.execute(f"SELECT * FROM users WHERE  id = '{user_id}'")
+        if sql.fetchone() is None:
+            return False
+        else:
+            return True
+        
+# изменение количества отправленных  сообщений
+def change_the_number_of_sent_messages(user_id, act):
+    with sqlite3.connect("mydatabase.db") as db:
+        sql = db.cursor()
+        if act == "add":
+            sql.execute(f"UPDATE users SET number_of_messages_received = number_of_messages_received + 1 WHERE id = '{user_id}'")
+        else:
+            sql.execute(f"UPDATE users SET number_of_messages_received = number_of_messages_received - 1 WHERE id = '{user_id}'")
+
 
 
 # изменение текущего действия пользователя
