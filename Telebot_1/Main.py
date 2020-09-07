@@ -115,7 +115,9 @@ async def any_not_command_message(message: types.Message):
 
 # без понятия как это описать лучше чем это делает название
 async def reaction_to_event(camera_id, image, text):
-    time.sleep(1) # место где я облажался 1 раз
+    while antispam.mailing_in_progress:
+        time.sleep(1)
+    antispam.change_mailing_in_progress()
     chet = 0
     with open(image, 'rb') as photo:
         for value in database_commands.who_subscribed_to_the_camera(camera_id):
@@ -125,6 +127,7 @@ async def reaction_to_event(camera_id, image, text):
             if chet == 20:
                 chet = 0
                 time.sleep(1) # место где я облажался 3 раз
+    antispam.change_mailing_in_progress()
 
 # что отправлять на старте или если сообщение - не комманда
 def standart_text(id):

@@ -25,14 +25,14 @@ def create_table():
                     FOREIGN KEY (cameras_id) REFERENCES cameras(id)
                     )""") 
         
-        sql.execute(f"UPDATE users SET number_of_messages_received = 0")
+        #sql.execute(f"UPDATE users SET number_of_messages_received = number_of_messages_received + 1 WHERE id = '{user_id}'")
         
 
 # добавление юзеров
 def add_users():
     with sqlite3.connect("mydatabase.db") as db:
         sql = db.cursor()
-        users_id = ['454054254']
+        users_id = ['454054254', '466882881']
         for user_id in users_id:
             sql.execute(f"SELECT id FROM users WHERE id = '{user_id}'")
             if sql.fetchone() is None:
@@ -125,26 +125,6 @@ def who_subscribed_to_the_camera(camera_id):
         return sql.execute(f"SELECT users_id FROM users_cameras WHERE cameras_id = '{camera_id}'")
 
 
-# можно ли отправить еще сообщение пользователю
-def is_it_possible_to_send_another_message_to_the_user(user_id):
-    with sqlite3.connect("mydatabase.db") as db:
-        sql = db.cursor()
-        sql.execute(f"SELECT * FROM users WHERE  id = '{user_id}'")
-        if sql.fetchone() is None:
-            return False
-        else:
-            return True
-        
-# изменение количества отправленных  сообщений
-def change_the_number_of_sent_messages(user_id, act):
-    with sqlite3.connect("mydatabase.db") as db:
-        sql = db.cursor()
-        if act == "add":
-            sql.execute(f"UPDATE users SET number_of_messages_received = number_of_messages_received + 1 WHERE id = '{user_id}'")
-        else:
-            sql.execute(f"UPDATE users SET number_of_messages_received = number_of_messages_received - 1 WHERE id = '{user_id}'")
-
-
 
 # изменение текущего действия пользователя
 # это несколько противоречит тз, но при выборе команды она автоматом отправляется, а вписывать ее вручную не так удобно
@@ -161,3 +141,25 @@ def get_status_user(id):
         sql = db.cursor()
         for value in sql.execute(f"SELECT status FROM users WHERE id = '{id}'"):
             return value
+
+
+
+# часть недоделанного антиспамера; или удалить или доделать
+# можно ли отправить еще сообщение пользователю
+def is_it_possible_to_send_another_message_to_the_user(user_id, number_before_ban = 1):
+    with sqlite3.connect("mydatabase.db") as db:
+        sql = db.cursor()
+        sql.execute(f"SELECT * FROM users WHERE number_of_messages_received = '{number_before_ban}' and id = '{user_id}'")
+        if sql.fetchone() is None:
+            return False
+        else:
+            return True
+        
+# изменение количества отправленных  сообщений
+def change_the_number_of_sent_messages(user_id, act):
+    with sqlite3.connect("mydatabase.db") as db:
+        sql = db.cursor()
+        if act == "add":
+            sql.execute(f"UPDATE users SET number_of_messages_received = number_of_messages_received + 1 WHERE id = '{user_id}'")
+        else:
+            sql.execute(f"UPDATE users SET number_of_messages_received = number_of_messages_received - 1 WHERE id = '{user_id}'")
