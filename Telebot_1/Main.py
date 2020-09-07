@@ -23,6 +23,8 @@ async def sub(message: types.Message):
     if database_commands.does_the_user_have_access(message.from_user.id):
         database_commands.change_status_user(message.from_user.id, "sub")
         await message.answer("Введите номер камеры на которую хотите подписаться")
+    else:
+        await message.answer(text_report_lack_of_right())
     
         
 # отписаться
@@ -31,6 +33,8 @@ async def stop(message: types.Message):
     if database_commands.does_the_user_have_access(message.from_user.id):
         database_commands.change_status_user(message.from_user.id, "stop")
         await message.answer("Введите номер камеры откоторой хотите отписаться или 'all' для отмены всех подписок")
+    else:
+        await message.answer(text_report_lack_of_right())
     
 # инфа о подписках
 @dp.message_handler(commands = ['cameras'])
@@ -38,6 +42,9 @@ async def cameras(message: types.Message):
     if database_commands.does_the_user_have_access(message.from_user.id):
         database_commands.change_status_user(message.from_user.id, "calmness")
         await message.answer(database_commands.cameras(message.from_user.id) + f"\n\n" + standart_text(message.from_user.id))
+    else:
+        await message.answer(text_report_lack_of_right())
+
  
 
 # информация о всех камерах
@@ -46,6 +53,8 @@ async def get_info(message: types.Message):
     if database_commands.does_the_user_have_access(message.from_user.id):
         database_commands.change_status_user(message.from_user.id, "calmness")
         await message.answer(database_commands.get_info() + f"\n\n" + standart_text(message.from_user.id))
+    else:  
+        await message.answer(text_report_lack_of_right())
 
 # конец обработки реакции на комманды
 #________________________________________________________________________________________
