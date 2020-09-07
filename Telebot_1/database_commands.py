@@ -1,6 +1,6 @@
 import sqlite3
 
-# создание таблиц
+# создание таблиц#
 def create_table():
     with sqlite3.connect("mydatabase.db") as db:
         sql = db.cursor()
