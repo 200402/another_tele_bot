@@ -24,6 +24,12 @@ def create_table():
                     FOREIGN KEY (users_id) REFERENCES users(id)
                     FOREIGN KEY (cameras_id) REFERENCES cameras(id)
                     )""") 
+
+        sql.execute("""CREATE TABLE IF NOT EXISTS crutch_antispam (
+                    number_of_corrected_messages INTEGER DEFAULT 0
+                    )""") 
+        
+        sql.execute(f"INSERT INTO crutch_antispam VALUES (?)", ('0'))
         
         #sql.execute(f"UPDATE users SET number_of_messages_received = number_of_messages_received + 1 WHERE id = '{user_id}'")
         
@@ -144,22 +150,23 @@ def get_status_user(id):
 
 
 
-# часть недоделанного антиспамера; или удалить или доделать
-# можно ли отправить еще сообщение пользователю
-def is_it_possible_to_send_another_message_to_the_user(user_id, number_before_ban = 1):
+# антиспамер; 
+# можно ли отправить еще сообщение 
+def is_it_possible_to_send_another_message_to_the_user():
     with sqlite3.connect("mydatabase.db") as db:
         sql = db.cursor()
-        sql.execute(f"SELECT * FROM users WHERE number_of_messages_received = '{number_before_ban}' and id = '{user_id}'")
-        if sql.fetchone() is None:
-            return False
-        else:
-            return True
+        for value in sql.execute(f"SELECT * FROM crutch_antispam"):
+            print(value[0])
+            if value[0] >=20:
+                return False
+            else:
+                return True
         
 # изменение количества отправленных  сообщений
-def change_the_number_of_sent_messages(user_id, act):
+def change_the_number_of_sent_messages(act = ""):
     with sqlite3.connect("mydatabase.db") as db:
         sql = db.cursor()
         if act == "add":
-            sql.execute(f"UPDATE users SET number_of_messages_received = number_of_messages_received + 1 WHERE id = '{user_id}'")
+            sql.execute(f"UPDATE crutch_antispam SET number_of_corrected_messages = number_of_corrected_messages + 1")
         else:
-            sql.execute(f"UPDATE users SET number_of_messages_received = number_of_messages_received - 1 WHERE id = '{user_id}'")
+            sql.execute(f"UPDATE crutch_antispam SET number_of_corrected_messages = 0")

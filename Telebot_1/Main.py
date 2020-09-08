@@ -3,7 +3,7 @@ import time
 import asyncio
 import logging
 import contextvars
-import antispam
+import random
 
 from config import token
 from aiogram import Bot, Dispatcher, executor, types
@@ -70,9 +70,10 @@ async def get_info(message: types.Message):
 # симуляция получения события если не нужно будет то удалить к ****
 @dp.message_handler(commands = ['get_camera_info'])
 async def get_camera_info(message: types.Message):
-    await reaction_to_event(1, 'image1.jpg', 'пример текста1')
-    await reaction_to_event(3, 'image3.jpg', 'пример текста3')
-    await reaction_to_event(4, 'image4.jpg', 'пример текста4')
+    for i in range(1,1000):
+        await reaction_to_event(1, 'image1.jpg', 'пример текста1')
+        await reaction_to_event(3, 'image3.jpg', 'пример текста3')
+        await reaction_to_event(4, 'image4.jpg', 'пример текста4')
     await message.answer("конец проверки")
 
 
@@ -115,19 +116,16 @@ async def any_not_command_message(message: types.Message):
 
 # без понятия как это описать лучше чем это делает название
 async def reaction_to_event(camera_id, image, text):
-    while antispam.mailing_in_progress:
-        time.sleep(1)
-    antispam.change_mailing_in_progress()
-    chet = 0
     with open(image, 'rb') as photo:
         for value in database_commands.who_subscribed_to_the_camera(camera_id):
-            #antispam.antispamer(value[0]) место где я облажался 2 раз
+            database_commands.change_the_number_of_sent_messages('add')
+            if not (database_commands.is_it_possible_to_send_another_message_to_the_user()):
+                print("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq")
+                time.sleep(1.2)     # не меньше 1
+                database_commands.change_the_number_of_sent_messages()
+            time.sleep(0.1)         # можно поэксперементировать
+            print("qweakkka")
             await bot.send_photo(value[0], photo, text)
-            chet += 1
-            if chet == 20:
-                chet = 0
-                time.sleep(1) # место где я облажался 3 раз
-    antispam.change_mailing_in_progress()
 
 # что отправлять на старте или если сообщение - не комманда
 def standart_text(id):

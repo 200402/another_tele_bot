@@ -1,14 +1,9 @@
-import database_commands
-import multiprocessing
-import time
-
 # файл моего позора, не буду удалять авось кто то доведет до ума
-
-mailing_in_progress = False
-
-def change_mailing_in_progress():
-    mailing_in_progress = not mailing_in_progress
-
+# import time
+# import asyncio
+# 
+# 
+# 
 # number_of_messages = multiprocessing.Value('i', 0)
 # 
 #  # задерживает выполнение программы пока не будут выполняться условия антиспама
