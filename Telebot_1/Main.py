@@ -2,8 +2,6 @@ import database_commands
 import time
 import asyncio
 import logging
-import contextvars
-import random
 
 from config import token
 from aiogram import Bot, Dispatcher, executor, types
@@ -23,6 +21,7 @@ database_commands.add_cameras()
 
 @dp.message_handler(commands = ['start'])
 async def statring(message: types.Message):
+    antispam()
     await message.answer(standart_text(message.from_user.id))
     
 
@@ -31,8 +30,10 @@ async def statring(message: types.Message):
 async def sub(message: types.Message):
     if database_commands.does_the_user_have_access(message.from_user.id):
         database_commands.change_status_user(message.from_user.id, "sub")
+        antispam()
         await message.answer("Введите номер камеры на которую хотите подписаться")
     else:
+        antispam()
         await message.answer(text_report_lack_of_right())
     
         
@@ -41,8 +42,10 @@ async def sub(message: types.Message):
 async def stop(message: types.Message):
     if database_commands.does_the_user_have_access(message.from_user.id):
         database_commands.change_status_user(message.from_user.id, "stop")
+        antispam()
         await message.answer("Введите номер камеры откоторой хотите отписаться или 'all' для отмены всех подписок")
     else:
+        antispam()
         await message.answer(text_report_lack_of_right())
     
 # инфа о подписках
@@ -50,8 +53,10 @@ async def stop(message: types.Message):
 async def cameras(message: types.Message):
     if database_commands.does_the_user_have_access(message.from_user.id):
         database_commands.change_status_user(message.from_user.id, "calmness")
+        antispam()
         await message.answer(database_commands.cameras(message.from_user.id) + f"\n\n" + standart_text(message.from_user.id))
     else:
+        antispam()
         await message.answer(text_report_lack_of_right())
 
  
@@ -61,8 +66,10 @@ async def cameras(message: types.Message):
 async def get_info(message: types.Message):
     if database_commands.does_the_user_have_access(message.from_user.id):
         database_commands.change_status_user(message.from_user.id, "calmness")
+        antispam()
         await message.answer(database_commands.get_info() + f"\n\n" + standart_text(message.from_user.id))
     else:  
+        antispam()
         await message.answer(text_report_lack_of_right())
     
 
@@ -74,24 +81,28 @@ async def get_camera_info(message: types.Message):
         await reaction_to_event(1, 'image1.jpg', 'пример текста1')
         await reaction_to_event(3, 'image3.jpg', 'пример текста3')
         await reaction_to_event(4, 'image4.jpg', 'пример текста4')
+    antispam()
     await message.answer("конец проверки")
 
 
 @dp.message_handler(commands = ['get_camera_info1'])
 async def get_camera_info(message: types.Message):
     await reaction_to_event(1, 'image1.jpg', "пример текста1")
+    antispam()
     await message.answer("конец проверки")
 
 
 @dp.message_handler(commands = ['get_camera_info3'])
 async def get_camera_info(message: types.Message):
     await reaction_to_event(3, 'image3.jpg', 'пример текста3')
+    antispam()
     await message.answer("конец проверки")
 
 
 @dp.message_handler(commands = ['get_camera_info4'])
 async def get_camera_info(message: types.Message):
     await reaction_to_event(4, 'image4.jpg', 'пример текста4')
+    antispam()
     await message.answer("конец проверки")
 # конец симуляции
 #________________________________________________________________________________________
@@ -105,12 +116,16 @@ async def any_not_command_message(message: types.Message):
     if database_commands.does_the_user_have_access(message.from_user.id):
         status = database_commands.get_status_user(message.from_user.id)
         if status[0] == "sub":
+            antispam()
             await message.answer(database_commands.sub(message.from_user.id, message.text))
         elif status[0] == "stop":
+            antispam()
             await message.answer(database_commands.stop(message.from_user.id, message.text)) 
         database_commands.change_status_user(message.from_user.id, "calmness") # эта строчка служит защитой от ситуаций случайных отписок/подписок, а лучше с ней или без нее не моего ума дело
+        antispam()
         await message.answer(standart_text(message.from_user.id))
     else:
+        antispam()
         await message.answer(standart_text(message.from_user.id))
 
 
@@ -118,13 +133,8 @@ async def any_not_command_message(message: types.Message):
 async def reaction_to_event(camera_id, image, text):
     with open(image, 'rb') as photo:
         for value in database_commands.who_subscribed_to_the_camera(camera_id):
-            database_commands.change_the_number_of_sent_messages('add')
-            if not (database_commands.is_it_possible_to_send_another_message_to_the_user()):
-                print("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq")
-                time.sleep(1.2)     # не меньше 1
-                database_commands.change_the_number_of_sent_messages()
             time.sleep(0.1)         # можно поэксперементировать
-            print("qweakkka")
+            antispam()
             await bot.send_photo(value[0], photo, text)
 
 # что отправлять на старте или если сообщение - не комманда
@@ -133,6 +143,14 @@ def standart_text(id):
         return text_instructions()
     else:
         return text_report_lack_of_right()
+
+
+#
+def antispam():
+    database_commands.change_the_number_of_sent_messages('add')
+    if not (database_commands.is_it_possible_to_send_another_message_to_the_user()):
+        time.sleep(1.2)     # не меньше 1
+        database_commands.change_the_number_of_sent_messages()
 
 
 # инструкции к боту

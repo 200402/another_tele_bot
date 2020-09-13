@@ -28,13 +28,16 @@ def create_table():
         sql.execute("""CREATE TABLE IF NOT EXISTS crutch_antispam (
                     number_of_corrected_messages INTEGER DEFAULT 0
                     )""") 
-        
-        sql.execute(f"INSERT INTO crutch_antispam VALUES (?)", ('0'))
+
+        for value in sql.execute(f"SELECT COUNT(*) FROM crutch_antispam"):
+            if not value[0] == 1:
+                sql.execute(f"INSERT INTO crutch_antispam VALUES (?)", ('0',))
+
         
         #sql.execute(f"UPDATE users SET number_of_messages_received = number_of_messages_received + 1 WHERE id = '{user_id}'")
         
 
-# добавление юзеров
+# добавление юзеров в бд
 def add_users():
     with sqlite3.connect("mydatabase.db") as db:
         sql = db.cursor()
@@ -45,7 +48,7 @@ def add_users():
                 sql.execute(f"INSERT INTO users VALUES (?,?,?)", (user_id,"calmness",'0'))
 
 
-# добавление камер
+# добавление камер в бд
 def add_cameras():
     with sqlite3.connect("mydatabase.db") as db:
         sql = db.cursor()
@@ -72,7 +75,7 @@ def sub(id_user, id_camera):
         sql = db.cursor()
         sql.execute(f"SELECT * FROM cameras WHERE id = '{id_camera}'")
         if sql.fetchone() is None: 
-            return "Нет камеры с таким номером"
+            return "Нет камеры с таким номером" # вывести в отдельную функцию(?)
         else:
             sql.execute(f"SELECT * FROM users_cameras WHERE users_id = '{id_user}' AND cameras_id = '{id_camera}'")
             if sql.fetchone() is None:
@@ -86,7 +89,6 @@ def sub(id_user, id_camera):
 def stop(id_user, id_camera):
     with sqlite3.connect("mydatabase.db") as db:
         sql = db.cursor()
-        sql.execute(f"SELECT * FROM cameras WHERE id = '{id_camera}'")
         if id_camera.lower() == "all":
             sql.execute(f"DELETE FROM users_cameras WHERE users_id = '{id_user}'")
             return "Вы отменили все свои подписки"
@@ -156,9 +158,8 @@ def is_it_possible_to_send_another_message_to_the_user():
     with sqlite3.connect("mydatabase.db") as db:
         sql = db.cursor()
         for value in sql.execute(f"SELECT * FROM crutch_antispam"):
-            print(value[0])
-            if value[0] >=20:
-                return False
+            if value[0] >=15:   # 15 про запас, тут учитываются только сообщения рассылки если не забуду то поправлю,
+                return False    # лучше не ставить более 20
             else:
                 return True
         
